@@ -1,5 +1,8 @@
 # Crpyto  
-thứ tự run   
+## Cài đặt thư viện 
+pip install -r requirements.txt
+
+## thứ tự run   
 1 - _crawl_OHLCV.py  
 2 - _indicators.py  
 3 - _local_high_low.py  
