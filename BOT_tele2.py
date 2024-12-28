@@ -72,14 +72,14 @@ def make_prediction(rsi, stoch_d, cci):
     prediction_proba = knn_model.predict_proba(indicators)
 
     # Nếu tỷ lệ xác suất cho nhãn 1 (đỉnh cục bộ) > 90%, gửi cảnh báo
-    if prediction_proba[0][1] > 0.9:
-        send_telegram_message(f"Khả năng dự đoán đỉnh cục bộ (tỉ lệ > 90%): RSI={rsi:.2f}, %D={stoch_d:.2f}, CCI={cci:.2f}")
-        print("Cảnh báo: Đỉnh cục bộ được dự đoán với xác suất > 90%")
-        time.sleep(300)  # Ngừng một lúc để tránh gửi quá nhiều tin nhắn
+    if prediction_proba[0][1] > 0.8:
+        send_telegram_message(f"Khả năng dự đoán đỉnh cục bộ {prediction_proba[0][1] * 100:.2f}%: RSI={rsi:.2f}, %D={stoch_d:.2f}, CCI={cci:.2f}")
+        print("Cảnh báo: Đỉnh cục bộ được dự đoán với xác suất > 80%")
+        time.sleep(1)  # Ngừng một lúc để tránh gửi quá nhiều tin nhắn
     # Nếu tỷ lệ xác suất cho nhãn 0 (đáy cục bộ) > 90%, gửi cảnh báo
-    elif prediction_proba[0][0] > 0.9:
-        send_telegram_message(f"Khả năng dự đoán đáy cục bộ (tỉ lệ > 90%): RSI={rsi:.2f}, %D={stoch_d:.2f}, CCI={cci:.2f}")
-        print("Cảnh báo: Đáy cục bộ được dự đoán với xác suất > 90%")
+    elif prediction_proba[0][0] > 0.8:
+        send_telegram_message(f"Khả năng dự đoán đáy cục bộ {prediction_proba[0][0] * 100:.2f}%: RSI={rsi:.2f}, %D={stoch_d:.2f}, CCI={cci:.2f}")
+        print("Cảnh báo: Đáy cục bộ được dự đoán với xác suất > 80%")
         time.sleep(300)  # Ngừng một lúc để tránh gửi quá nhiều tin nhắn
     else:
         print(f"Xác suất đỉnh cục bộ: {prediction_proba[0][1]:.2f}")
