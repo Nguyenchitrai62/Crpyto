@@ -48,3 +48,5 @@ print(classification_report(y_test, y_pred))
 
 # Lưu mô hình với tham số K tối ưu
 joblib.dump(knn_optimal, 'knn_model_optimal.pkl')
+
+
