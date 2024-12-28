@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import classification_report
 import joblib  # Thư viện để lưu mô hình
@@ -22,43 +22,29 @@ y = filtered_data[target].values
 # Chia dữ liệu thành tập huấn luyện và tập kiểm tra
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# Khởi tạo và huấn luyện mô hình KNN
-k = 501  # Số lượng láng giềng gần nhất
-knn = KNeighborsClassifier(n_neighbors=k)
-knn.fit(X_train, y_train)
+# Định nghĩa các giá trị của K cần thử
+param_grid = {'n_neighbors': np.arange(1, 50)}  # Thử các giá trị K từ 1 đến 20
 
-# Đánh giá mô hình trên tập kiểm tra
-y_pred = knn.predict(X_test)
+# Khởi tạo mô hình KNN
+knn = KNeighborsClassifier()
+
+# Sử dụng GridSearchCV để tìm kiếm giá trị K tối ưu
+grid_search = GridSearchCV(knn, param_grid, cv=10)  # cv=5 là số lần phân chia dữ liệu trong K-fold cross-validation
+grid_search.fit(X_train, y_train)
+
+# In ra tham số K tối ưu và độ chính xác tương ứng
+optimal_k = grid_search.best_params_['n_neighbors']
+print(f"Tham số K tối ưu: {optimal_k}")
+print(f"Độ chính xác trên tập kiểm tra: {grid_search.best_score_}")
+
+# Huấn luyện mô hình KNN với tham số K tối ưu
+knn_optimal = KNeighborsClassifier(n_neighbors=optimal_k)
+knn_optimal.fit(X_train, y_train)
+
+# Đánh giá mô hình với tham số K tối ưu trên tập kiểm tra
+y_pred = knn_optimal.predict(X_test)
 print("Báo cáo phân loại:")
 print(classification_report(y_test, y_pred))
 
-# Lưu mô hình KNN sau khi huấn luyện
-joblib.dump(knn, 'knn_model.pkl')  # Lưu mô hình vào file 'knn_model.pkl'
-
-# ----------- Dự đoán với đầu vào từ bàn phím -----------
-
-def get_user_input():
-    print("\nNhập các chỉ số kỹ thuật hiện tại:")
-    rsi = float(input("RSI: "))
-    percent_d = float(input("%D: "))
-    cci = float(input("CCI: "))
-    return np.array([[rsi, percent_d, cci]])
-
-# Nhập các giá trị từ bàn phím
-user_input = get_user_input()
-
-# Dự đoán nhãn và xác suất cho đầu vào
-predicted_label = knn.predict(user_input)[0]
-predicted_probabilities = knn.predict_proba(user_input)[0]
-
-# In kết quả dự đoán
-print(f"\nDự đoán xu hướng: {predicted_label}")
-print(f"Xác suất dự đoán: {dict(zip(knn.classes_, predicted_probabilities))}")
-
-# Tùy chỉnh in nhãn theo yêu cầu (Đỉnh cục bộ = 1, Đáy cục bộ = 0)
-if predicted_label == 0:
-    print("Đáy cục bộ")
-elif predicted_label == 1:
-    print("Đỉnh cục bộ")
-else:
-    print("Dữ liệu không nằm trong tập huấn luyện!")
+# Lưu mô hình với tham số K tối ưu
+joblib.dump(knn_optimal, 'knn_model_optimal.pkl')
