@@ -12,12 +12,12 @@ print("Thời gian hiện tại:", current_time)
 
 symbol = 'BTC/USDT'
 limit = 1000  
-total_limit = 48000  
+total_limit = 100000  
 num_requests = total_limit // limit  
 
 ohlcv = []
 for i in range(num_requests):
-    data = binance.fetch_ohlcv(symbol, timeframe='1h', limit=limit, since=current_time - (i+1) * 1000 * 1000 * 60 * 60 * 1)
+    data = binance.fetch_ohlcv(symbol, timeframe='5m', limit=limit, since=current_time - (i+1) * 1000 * 1000 * 60 * 5 * 1)
     if not data:
         break
     ohlcv[:0] = data

@@ -10,7 +10,7 @@ df = pd.read_csv(file_path)
 df['Date'] = pd.to_datetime(df['Date'])
 
 # Tham số để xác định đỉnh và đáy
-n = 10  # Số phiên xung quanh để so sánh
+n = 20  # Số phiên xung quanh để so sánh
 threshold = 0.02  # Ngưỡng biến động tối thiểu (1%)
 
 # Tìm chỉ số của đỉnh cục bộ

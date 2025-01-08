@@ -6,7 +6,7 @@ import numpy as np
 import socket
 import joblib
 from ta.momentum import RSIIndicator, StochasticOscillator
-from ta.trend import CCIIndicator
+from ta.trend import CCIIndicator, ADXIndicator
 
 # Khởi tạo sàn giao dịch Binance
 binance = ccxt.binance({
@@ -58,12 +58,16 @@ def get_indicators_for_timeframe(symbol, timeframe, window=14):
     stoch_k = stoch.stoch().iloc[-1]
     stoch_d = stoch.stoch_signal().iloc[-1]
     cci = CCIIndicator(df['High'], df['Low'], df['Close'], window=window).cci().iloc[-1]
-    print(f"RSI:{rsi}        %D:{stoch_d}        CCI:{cci}")
+    adx = ADXIndicator(df['High'], df['Low'], df['Close'], window=window).adx().iloc[-1]
+    
+    # In các chỉ báo
+    print(f"RSI: {rsi}    %D: {stoch_d}    CCI: {cci}    ADX: {adx}")
+    
     # Trả về các chỉ báo đã chuẩn hóa
-    return rsi/100, stoch_d/100, (cci+500)/1000  # Chuyển các chỉ báo về phạm vi [0, 1]
+    return rsi / 100, stoch_d / 100, (cci + 500) / 1000, adx / 100  # Chuyển các chỉ báo về phạm vi [0, 1]
 
 # Hàm dự đoán và gửi cảnh báo
-def make_prediction(rsi, stoch_d, cci):
+def make_prediction(rsi, stoch_d, cci, adx):
     # Chuyển các giá trị chỉ báo thành mảng numpy
     indicators = np.array([[rsi, stoch_d, cci]])  # Cần sử dụng các chỉ báo phù hợp với mô hình của bạn
 
@@ -81,6 +85,9 @@ def make_prediction(rsi, stoch_d, cci):
         send_telegram_message(f"Khả năng dự đoán đáy cục bộ {prediction_proba[0][0] * 100:.2f}%: RSI={rsi:.2f}, %D={stoch_d:.2f}, CCI={cci:.2f}")
         print("Cảnh báo: Đáy cục bộ được dự đoán với xác suất > 80%")
         time.sleep(300)  # Ngừng một lúc để tránh gửi quá nhiều tin nhắn
+    elif rsi*100 > 58.86 and adx*100 > 50.41:
+        send_telegram_message(f"rsi > 58.86 and adx > 50.41")
+        print("rsi > 58.86 and adx > 50.41")
     else:
         print(f"Xác suất đỉnh cục bộ: {prediction_proba[0][1]:.2f}")
         print(f"Xác suất đáy cục bộ: {prediction_proba[0][0]:.2f}")
@@ -88,9 +95,9 @@ def make_prediction(rsi, stoch_d, cci):
 # Chạy vòng lặp để liên tục kiểm tra và dự đoán
 while True:
     if is_connected():
-        rsi, stoch_d, cci = get_indicators_for_timeframe("BTC/USDT", "1h")  # Thay "BTC/USDT" và "1h" theo nhu cầu
+        rsi, stoch_d, cci, adx= get_indicators_for_timeframe("BTC/USDT", "5m") 
 
-        make_prediction(rsi, stoch_d, cci)
+        make_prediction(rsi, stoch_d, cci, adx)
 
         time.sleep(1)  # Ngừng 1 giây để tránh quá tải API của Binance
     else:
